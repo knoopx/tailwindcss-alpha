@@ -1,65 +1,65 @@
-const Color = require('color')
+const Color = require("color")
 
 const PREFIXES = {
-  backgroundColors: ['bg'],
-  textColors: ['text'],
-  borderColors: ['border', 'border-t', 'border-r', 'border-b', 'border-l'],
-  svgFill: ['fill'],
-  svgStroke: ['stroke']
+  backgroundColor: ["bg"],
+  textColor: ["text"],
+  borderColor: ["border", "border-t", "border-r", "border-b", "border-l"],
+  fill: ["fill"],
+  stroke: ["stroke"],
 }
 
 const PROPERTIES = {
-  backgroundColors: ['backgroundColor'],
-  textColors: ['color'],
-  borderColors: [
-    'borderColor',
-    'borderTopColor',
-    'borderRightColor',
-    'borderBottomColor',
-    'borderLeftColor'
+  backgroundColor: ["backgroundColor"],
+  textColor: ["color"],
+  borderColor: [
+    "borderColor",
+    "borderTopColor",
+    "borderRightColor",
+    "borderBottomColor",
+    "borderLeftColor",
   ],
-  svgFill: ['fill'],
-  svgStroke: ['stroke']
+  fill: ["fill"],
+  stroke: ["stroke"],
 }
 
 module.exports = function(opts = {}) {
   return function({ e, addUtilities, config }) {
-    let {
-      alpha = config('alpha', config('opacity', {})),
-      modules = {
-        backgroundColors: true,
-        textColors: false,
-        borderColors: false,
-        svgFill: false,
-        svgStroke: false
-      }
+    const {
+      alpha = config("theme.alpha", config("theme.opacity", {})),
+      variants = {
+        backgroundColor: true,
+        textColor: false,
+        borderColor: false,
+        fill: false,
+        stroke: false,
+      },
     } = opts
 
     Object.entries(alpha).forEach(([alphaKey, alphaValue]) => {
-      let alphaValueFloat = parseFloat(alphaValue)
+      const alphaValueFloat = parseFloat(alphaValue)
       if (alphaValueFloat === 0 || alphaValueFloat === 1) return null
 
-      Object.entries(modules).forEach(([configKey, variants]) => {
+      Object.entries(variants).forEach(([configKey, variants]) => {
         if (variants === true) {
-          variants = config(`modules.${configKey}`, [])
+          variants = config(`variants.${configKey}`, [])
         }
         if (variants === false) return
 
-        let colors = config(configKey, {})
+        const colors = config(`theme.${configKey}`, {})
 
         addUtilities(
           Object.entries(colors)
             .map(([colorKey, color]) => {
               try {
-                let parsed = Color(color)
+                const parsed = Color(color)
                 if (parsed.valpha === 1) {
                   return PREFIXES[configKey].map((prefix, i) => {
                     return {
                       [`.${e(`${prefix}-${colorKey}-${alphaKey}`)}`]: {
                         [`${PROPERTIES[configKey][i]}`]: parsed
                           .alpha(alphaValueFloat)
-                          .string()
-                      }
+                          .string(),
+                      },
                     }
                   })
                 }
@@ -69,7 +69,7 @@ module.exports = function(opts = {}) {
               return null
             })
             .filter(Boolean),
-          variants
+          variants,
         )
       })
     })
